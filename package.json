@@ -1,0 +1,29 @@
+{
+  "name": "lunch-picker",
+  "version": "1.0.0",
+  "description": "Random lunch decider PWA with weekly restrictions",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build needed - static HTML app'",
+    "start": "echo 'No start needed - static HTML app'",
+    "dev": "python -m http.server 8000 || npx serve ."
+  },
+  "keywords": [
+    "lunch",
+    "picker",
+    "pwa",
+    "random",
+    "food",
+    "decision"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nwinnie450/lunchpicker.git"
+  },
+  "homepage": "https://github.com/nwinnie450/lunchpicker",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
