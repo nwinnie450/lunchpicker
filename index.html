@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunch Picker - Random Lunch Decider</title>
+    <meta name="description" content="Decide what to eat for lunch in under 10 seconds with smart randomization and filters">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF6B35">
+    
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Design System Tokens */
+        :root {
+            /* Primary Colors */
+            --primary-500: #FF6B35;
+            --primary-400: #FF8A65;
+            --primary-600: #E53E3E;
+            
+            /* Secondary Colors */
+            --secondary-500: #4299E1;
+            --secondary-400: #63B3ED;
+            --secondary-600: #3182CE;
+            
+            /* Neutral Colors */
+            --neutral-50: #F9FAFB;
+            --neutral-100: #F3F4F6;
+            --neutral-200: #E5E7EB;
+            --neutral-300: #D1D5DB;
+            --neutral-400: #9CA3AF;
+            --neutral-500: #6B7280;
+            --neutral-700: #374151;
+            --neutral-900: #111827;
+            
+            /* Status Colors */
+            --success-500: #10B981;
+            --warning-500: #F59E0B;
+            --error-500: #EF4444;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            
+            /* Font Weights */
+            --font-normal: 400;
+            --font-medium: 500;
+            --font-semibold: 600;
+            --font-bold: 700;
+            
+            /* Spacing */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            font-weight: var(--font-normal);
+            line-height: 1.5;
+            color: var(--neutral-700);
+            background-color: var(--neutral-50);
+            overflow-x: hidden;
+        }
+        
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+        
+        input, textarea, select {
+            font-family: inherit;
+            outline: none;
+        }
+        
+        /* Header Component */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--neutral-50);
+            border-bottom: 1px solid var(--neutral-200);
+            padding: var(--space-5) var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        
+        .header h1 {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-semibold);
+            color: var(--neutral-900);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .settings-btn {
+            background: none;
+            color: var(--neutral-500);
+            font-size: var(--text-xl);
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            transition: color 0.2s ease;
+        }
+        
+        .settings-btn:hover {
+            color: var(--neutral-700);
+        }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-4);
+            display: grid;
+            gap: var(--space-6);
+        }
+        
+        @media (min-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr 400px;
+                gap: var(--space-8);
+                padding: var(--space-8);
+            }
+        }
+        
+        /* Spin Section */
+        .spin-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-6);
+            text-align: center;
+        }
+        
+        /* Primary Spin Button */
+        .spin-button {
+            width: 200px;
+            height: 200px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            box-shadow: var(--shadow-xl), 0 0 20px rgba(255, 107, 53, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spin-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(255, 107, 53, 0.4);
+        }
+        
+        .spin-button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        
+        .spin-button:disabled {
+            background: var(--neutral-300);
+            box-shadow: var(--shadow-md);
+            cursor: not-allowed;
+        }
+        
+        .spin-button.spinning {
+            animation: spin 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spin-icon {
+            font-size: 3rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .spin-button {
+                width: 240px;
+                height: 240px;
+            }
+        }
+        
+        /* Result Card */
+        .result-card {
+            display: none;
+            background: var(--neutral-50);
+            border: 2px solid var(--primary-500);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            animation: slideUpBounce 0.5s ease-out;
+        }
+        
+        .result-card.show {
+            display: block;
+        }
+        
+        @keyframes slideUpBounce {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            70% {
+                transform: translateY(-5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-3);
+        }
+        
+        .result-title {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-semibold);
+            color: var(--neutral-900);
+        }
+        
+        .result-price {
+            font-size: var(--text-lg);
+            color: var(--neutral-500);
+        }
+        
+        .result-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+        
+        .tag {
+            background: var(--neutral-200);
+            color: var(--neutral-700);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+        }
+        
+        .result-notes {
+            font-style: italic;
+            color: var(--neutral-700);
+            margin-bottom: var(--space-6);
+        }
+        
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-500);
+            color: white;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--secondary-600);
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            background: var(--neutral-100);
+            border-top: 1px solid var(--neutral-200);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+        }
+        
+        .filter-section {
+            margin-bottom: var(--space-3);
+        }
+        
+        .filter-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .filter-label {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--neutral-700);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+        
+        .filter-chip {
+            background: var(--neutral-200);
+            color: var(--neutral-700);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-chip.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        
+        .filter-chip:hover {
+            transform: translateY(-1px);
+        }
+        
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+        }
+        
+        .toggle-switch input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-500);
+        }
+        
+        /* Weekly History */
+        .weekly-history {
+            background: var(--neutral-50);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-4);
+        }
+        
+        .week-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .week-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--text-sm);
+        }
+        
+        .week-table th {
+            background: var(--neutral-100);
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-weight: var(--font-semibold);
+            color: var(--neutral-700);
+            border-bottom: 1px solid var(--neutral-200);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .week-table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--neutral-200);
+            vertical-align: middle;
+        }
+        
+        .week-table tr:hover {
+            background: var(--neutral-100);
+        }
+        
+        .day-name {
+            font-weight: var(--font-medium);
+            color: var(--neutral-700);
+        }
+        
+        .day-today {
+            color: var(--primary-500);
+            font-weight: var(--font-semibold);
+        }
+        
+        .lunch-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .lunch-emoji {
+            font-size: var(--text-lg);
+        }
+        
+        .lunch-time {
+            color: var(--neutral-500);
+            font-size: var(--text-xs);
+        }
+        
+        .empty-week {
+            padding: var(--space-8);
+            text-align: center;
+            color: var(--neutral-500);
+        }
+        
+        /* Item Management */
+        .item-management {
+            background: var(--neutral-50);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .item-header {
+            background: var(--neutral-100);
+            padding: var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .item-header h3 {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+        }
+        
+        .btn-primary {
+            background: var(--primary-500);
+            color: white;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-600);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-size: var(--text-base);
+            margin-bottom: var(--space-4);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .item-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .item-row {
+            padding: var(--space-4) var(--space-5);
+            border-bottom: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .item-row:hover {
+            background: var(--neutral-100);
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-size: var(--text-lg);
+            font-weight: var(--font-medium);
+            margin-bottom: var(--space-1);
+        }
+        
+        .item-meta {
+            display: flex;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+            color: var(--neutral-500);
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .btn-icon {
+            background: none;
+            color: var(--neutral-500);
+            padding: var(--space-1);
+            border-radius: var(--radius-sm);
+            transition: color 0.2s ease;
+        }
+        
+        .btn-icon:hover {
+            color: var(--neutral-700);
+            background: var(--neutral-200);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-16) var(--space-4);
+            color: var(--neutral-500);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-4);
+        }
+        
+        .empty-state h3 {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-2);
+            color: var(--neutral-700);
+        }
+        
+        .empty-state p {
+            margin-bottom: var(--space-6);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--space-4);
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: var(--space-6) var(--space-6) var(--space-4);
+            border-bottom: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: var(--text-xl);
+            font-weight: var(--font-semibold);
+        }
+        
+        .modal-close {
+            background: none;
+            color: var(--neutral-500);
+            font-size: var(--text-xl);
+            padding: var(--space-1);
+            border-radius: var(--radius-sm);
+        }
+        
+        .modal-close:hover {
+            color: var(--neutral-700);
+            background: var(--neutral-200);
+        }
+        
+        .modal-body {
+            padding: var(--space-6);
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+        
+        .form-label {
+            display: block;
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--neutral-700);
+            margin-bottom: var(--space-2);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-size: var(--text-base);
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+        
+        .weight-slider {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+        
+        .weight-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--neutral-300);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .weight-dot.active {
+            background: var(--primary-500);
+        }
+        
+        .modal-footer {
+            padding: var(--space-4) var(--space-6) var(--space-6);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+        }
+        
+        .btn-ghost {
+            background: none;
+            color: var(--neutral-700);
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-ghost:hover {
+            background: var(--neutral-100);
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: var(--space-16);
+            padding: var(--space-6) var(--space-4);
+            text-align: center;
+            border-top: 1px solid var(--neutral-200);
+            background: var(--neutral-50);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            font-size: var(--text-sm);
+        }
+        
+        .footer-link {
+            color: var(--neutral-500);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--neutral-700);
+        }
+        
+        /* Utility Classes */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .header {
+                height: 64px;
+            }
+            
+            .main-container {
+                padding: var(--space-4);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-actions {
+                justify-content: center;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="sr-only">Skip to main content</a>
+    
+    <!-- Header -->
+    <header class="header" role="banner">
+        <h1>
+            <span aria-label="Food">🍽️</span>
+            Lunch Picker
+        </h1>
+        <button class="settings-btn" aria-label="Settings" title="Settings">
+            ⚙️
+        </button>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-container" id="main-content">
+        <!-- Spin Section -->
+        <section class="spin-section" aria-label="Lunch selection">
+            <!-- Spin Button -->
+            <button 
+                class="spin-button" 
+                id="spinButton" 
+                aria-label="Spin to pick a random lunch option"
+                title="Click to pick a random lunch option"
+            >
+                <span class="spin-icon" aria-hidden="true">🎲</span>
+                <span>SPIN</span>
+            </button>
+            
+            <!-- Result Card -->
+            <div class="result-card" id="resultCard" role="region" aria-label="Lunch selection result">
+                <div class="result-header">
+                    <h2 class="result-title" id="resultTitle"></h2>
+                    <span class="result-price" id="resultPrice"></span>
+                </div>
+                <div class="result-tags" id="resultTags"></div>
+                <p class="result-notes" id="resultNotes"></p>
+                <div class="result-actions">
+                    <button class="btn-secondary" id="pickAgainBtn">🎲 Pick Again</button>
+                    <button class="btn-secondary" id="markEatenBtn">✅ Mark Eaten</button>
+                </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">🍽️</div>
+                <h3>Welcome to Lunch Picker!</h3>
+                <p>Add some lunch options to get started</p>
+                <button class="btn-primary" id="addFirstItemBtn">+ Add Your First Item</button>
+            </div>
+        </section>
+        
+        <!-- Sidebar (Filters + Item Management) -->
+        <aside class="sidebar" aria-label="Filters and item management">
+            <!-- Filter Bar -->
+            <section class="filter-bar" aria-label="Filters">
+                <div class="filter-section">
+                    <div class="filter-label">
+                        🏷️ Tags
+                    </div>
+                    <div class="filter-chips" id="tagFilters"></div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-label">
+                        💰 Price Range
+                    </div>
+                    <div class="filter-chips">
+                        <button class="filter-chip" data-price="$">$</button>
+                        <button class="filter-chip" data-price="$$">$$</button>
+                        <button class="filter-chip" data-price="$$$">$$$</button>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="avoidRepeats" checked>
+                        <span>🚫 No Repeats This Week</span>
+                    </label>
+                </div>
+            </section>
+            
+            <!-- Weekly History -->
+            <section class="weekly-history" aria-label="This week's lunch history">
+                <div class="item-header">
+                    <h3>This Week's Lunches</h3>
+                    <button class="btn-ghost" id="clearWeekBtn" title="Clear this week's history">🗑️ Clear</button>
+                </div>
+                
+                <div class="week-table-container">
+                    <table class="week-table" id="weekTable">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Lunch</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weekTableBody">
+                            <!-- Week data will be populated here -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="empty-week" id="emptyWeek" style="display: none;">
+                        <div style="text-align: center; padding: var(--space-8); color: var(--neutral-500);">
+                            <div style="font-size: 2rem; margin-bottom: var(--space-2);">📅</div>
+                            <div>No lunches picked this week yet</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Item Management -->
+            <section class="item-management" aria-label="Lunch items management">
+                <div class="item-header">
+                    <h3>Your Lunch Options</h3>
+                    <button class="btn-primary" id="addItemBtn">+ Add Item</button>
+                </div>
+                
+                <div style="padding: var(--space-4);">
+                    <input 
+                        type="search" 
+                        class="search-input" 
+                        id="searchInput" 
+                        placeholder="🔍 Search items..."
+                        aria-label="Search lunch items"
+                    >
+                </div>
+                
+                <div class="item-list" id="itemList" role="list">
+                    <!-- Items will be dynamically added here -->
+                </div>
+            </section>
+        </aside>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <nav class="footer-links" aria-label="Footer navigation">
+            <a href="#" class="footer-link" id="historyLink">📜 History</a>
+            <a href="#" class="footer-link" id="exportLink">📥 Export Data</a>
+            <a href="#" class="footer-link" id="importLink">📤 Import Data</a>
+        </nav>
+    </footer>
+    
+    <!-- Edit Item Modal -->
+    <div class="modal-overlay" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="editModalTitle">Add Item</h3>
+                <button class="modal-close" aria-label="Close modal">×</button>
+            </div>
+            <form class="modal-body" id="editForm">
+                <div class="form-group">
+                    <label class="form-label" for="itemName">Name *</label>
+                    <input type="text" class="form-input" id="itemName" required maxlength="100">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="itemEmoji">Emoji</label>
+                        <input type="text" class="form-input" id="itemEmoji" maxlength="2" placeholder="🍕">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="itemPrice">Price</label>
+                        <select class="form-input" id="itemPrice">
+                            <option value="$">$ - Budget</option>
+                            <option value="$$">$$ - Moderate</option>
+                            <option value="$$$">$$$ - Premium</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="itemTags">Tags (comma separated)</label>
+                    <input type="text" class="form-input" id="itemTags" placeholder="asian, spicy, quick">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="itemNotes">Notes</label>
+                    <textarea class="form-input" id="itemNotes" rows="3" maxlength="200"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Weight (preference)</label>
+                    <div class="weight-slider" id="weightSlider">
+                        <span class="weight-dot" data-weight="1"></span>
+                        <span class="weight-dot" data-weight="2"></span>
+                        <span class="weight-dot active" data-weight="3"></span>
+                        <span class="weight-dot" data-weight="4"></span>
+                        <span class="weight-dot" data-weight="5"></span>
+                    </div>
+                    <small style="color: var(--neutral-500); margin-top: var(--space-2); display: block;">
+                        Higher weight = more likely to be selected
+                    </small>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" id="cancelBtn">Cancel</button>
+                <button type="submit" class="btn-primary" id="saveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="importFile" accept=".json" style="display: none;">
+    
+    <script>
+        // App State
+        let appState = {
+            items: [],
+            history: [],
+            settings: {
+                cooldown_days: 3,
+                use_weighted: true,
+                weekly_restriction: true,
+                filters: {
+                    tags: [],
+                    price: []
+                }
+            },
+            currentEditingId: null
+        };
+        
+        // DOM Elements
+        const spinButton = document.getElementById('spinButton');
+        const resultCard = document.getElementById('resultCard');
+        const emptyState = document.getElementById('emptyState');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const itemList = document.getElementById('itemList');
+        const searchInput = document.getElementById('searchInput');
+        const tagFilters = document.getElementById('tagFilters');
+        
+        // Initialize App
+        function initApp() {
+            loadData();
+            updateUI();
+            setupEventListeners();
+            updateFilters();
+            updateWeeklyHistory();
+            
+            // Show empty state if no items
+            if (appState.items.length === 0) {
+                showEmptyState();
+            }
+        }
+        
+        // Data Persistence
+        function saveData() {
+            localStorage.setItem('lunchPickerData', JSON.stringify(appState));
+        }
+        
+        function loadData() {
+            const saved = localStorage.getItem('lunchPickerData');
+            if (saved) {
+                try {
+                    appState = { ...appState, ...JSON.parse(saved) };
+                } catch (e) {
+                    console.error('Failed to load saved data:', e);
+                }
+            }
+        }
+        
+        // UI Updates
+        function updateUI() {
+            renderItemList();
+            updateSpinButtonState();
+        }
+        
+        function showEmptyState() {
+            emptyState.style.display = 'block';
+            resultCard.classList.remove('show');
+        }
+        
+        function hideEmptyState() {
+            emptyState.style.display = 'none';
+        }
+        
+        function updateSpinButtonState() {
+            const eligibleItems = getEligibleItems();
+            spinButton.disabled = eligibleItems.length === 0;
+            
+            if (eligibleItems.length === 0 && appState.items.length > 0) {
+                spinButton.textContent = 'No Options';
+                spinButton.querySelector('.spin-icon').textContent = '🚫';
+            } else {
+                spinButton.innerHTML = '<span class="spin-icon">🎲</span><span>SPIN</span>';
+            }
+        }
+        
+        // Item Management
+        function addItem(itemData) {
+            const item = {
+                id: generateId(),
+                name: itemData.name,
+                emoji: itemData.emoji || '🍽️',
+                tags: itemData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+                price: itemData.price,
+                notes: itemData.notes,
+                weight: itemData.weight,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                last_picked_at: null
+            };
+            
+            appState.items.push(item);
+            saveData();
+            updateUI();
+            updateFilters();
+            hideEmptyState();
+        }
+        
+        function updateItem(id, itemData) {
+            const index = appState.items.findIndex(item => item.id === id);
+            if (index !== -1) {
+                appState.items[index] = {
+                    ...appState.items[index],
+                    name: itemData.name,
+                    emoji: itemData.emoji || '🍽️',
+                    tags: itemData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+                    price: itemData.price,
+                    notes: itemData.notes,
+                    weight: itemData.weight,
+                    updated_at: new Date().toISOString()
+                };
+                
+                saveData();
+                updateUI();
+                updateFilters();
+            }
+        }
+        
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                appState.items = appState.items.filter(item => item.id !== id);
+                saveData();
+                updateUI();
+                updateFilters();
+                
+                if (appState.items.length === 0) {
+                    showEmptyState();
+                }
+            }
+        }
+        
+        function renderItemList() {
+            const filteredItems = filterItems(appState.items);
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            const searchFiltered = filteredItems.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) ||
+                item.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+            
+            itemList.innerHTML = '';
+            
+            if (searchFiltered.length === 0) {
+                itemList.innerHTML = `
+                    <div style="padding: var(--space-8); text-align: center; color: var(--neutral-500);">
+                        ${appState.items.length === 0 ? 'No items added yet' : 'No items match your search'}
+                    </div>
+                `;
+                return;
+            }
+            
+            searchFiltered.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-row';
+                itemElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.emoji} ${item.name}</div>
+                        <div class="item-meta">
+                            <span>${item.tags.map(tag => `#${tag}`).join(' ')}</span>
+                            <span>${item.price}</span>
+                            <span>Weight: ${item.weight}</span>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-icon" onclick="editItem('${item.id}')" aria-label="Edit ${item.name}">✏️</button>
+                        <button class="btn-icon" onclick="deleteItem('${item.id}')" aria-label="Delete ${item.name}">🗑️</button>
+                    </div>
+                `;
+                itemList.appendChild(itemElement);
+            });
+        }
+        
+        // Weekly utility functions
+        function getWeekStart(date = new Date()) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as week start
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+        
+        function getWeekEnd(date = new Date()) {
+            const weekStart = getWeekStart(date);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            return weekEnd;
+        }
+        
+        function isCurrentWeek(date) {
+            const targetDate = new Date(date);
+            const weekStart = getWeekStart();
+            const weekEnd = getWeekEnd();
+            return targetDate >= weekStart && targetDate <= weekEnd;
+        }
+        
+        function getThisWeekHistory() {
+            return appState.history.filter(entry => isCurrentWeek(entry.picked_at));
+        }
+        
+        function getDayName(date) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[new Date(date).getDay()];
+        }
+        
+        // Filtering
+        function getEligibleItems() {
+            let eligible = filterItems(appState.items);
+            
+            // Apply weekly restriction
+            if (document.getElementById('avoidRepeats').checked) {
+                const thisWeekHistory = getThisWeekHistory();
+                const pickedItemIds = thisWeekHistory.map(entry => entry.item_id);
+                
+                eligible = eligible.filter(item => !pickedItemIds.includes(item.id));
+            }
+            
+            // Fallback: if no eligible items due to weekly restriction, ignore restriction
+            if (eligible.length === 0) {
+                eligible = filterItems(appState.items);
+            }
+            
+            return eligible;
+        }
+        
+        function filterItems(items) {
+            return items.filter(item => {
+                // Tag filter
+                if (appState.settings.filters.tags.length > 0) {
+                    const hasMatchingTag = appState.settings.filters.tags.some(tag => 
+                        item.tags.includes(tag)
+                    );
+                    if (!hasMatchingTag) return false;
+                }
+                
+                // Price filter
+                if (appState.settings.filters.price.length > 0) {
+                    if (!appState.settings.filters.price.includes(item.price)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
+        
+        function updateFilters() {
+            // Update tag filters
+            const allTags = [...new Set(appState.items.flatMap(item => item.tags))];
+            tagFilters.innerHTML = '';
+            
+            allTags.forEach(tag => {
+                const chip = document.createElement('button');
+                chip.className = 'filter-chip';
+                chip.dataset.tag = tag;
+                chip.textContent = tag;
+                
+                if (appState.settings.filters.tags.includes(tag)) {
+                    chip.classList.add('active');
+                }
+                
+                chip.addEventListener('click', () => toggleTagFilter(tag));
+                tagFilters.appendChild(chip);
+            });
+        }
+        
+        function toggleTagFilter(tag) {
+            const index = appState.settings.filters.tags.indexOf(tag);
+            if (index === -1) {
+                appState.settings.filters.tags.push(tag);
+            } else {
+                appState.settings.filters.tags.splice(index, 1);
+            }
+            
+            saveData();
+            updateFilters();
+            renderItemList();
+            updateSpinButtonState();
+        }
+        
+        function togglePriceFilter(price) {
+            const index = appState.settings.filters.price.indexOf(price);
+            if (index === -1) {
+                appState.settings.filters.price.push(price);
+            } else {
+                appState.settings.filters.price.splice(index, 1);
+            }
+            
+            saveData();
+            updateFilters();
+            renderItemList();
+            updateSpinButtonState();
+        }
+        
+        // Spin Logic
+        function spin() {
+            if (spinButton.disabled) return;
+            
+            const eligibleItems = getEligibleItems();
+            if (eligibleItems.length === 0) return;
+            
+            // Disable button and show spinning animation
+            spinButton.disabled = true;
+            spinButton.classList.add('spinning');
+            
+            // Simulate spin delay
+            setTimeout(() => {
+                const selectedItem = selectRandomItem(eligibleItems);
+                showResult(selectedItem);
+                
+                // Update item's last picked time
+                selectedItem.last_picked_at = new Date().toISOString();
+                
+                // Add to history
+                appState.history.unshift({
+                    item_id: selectedItem.id,
+                    picked_at: new Date().toISOString()
+                });
+                
+                // Keep only last 30 history items
+                appState.history = appState.history.slice(0, 30);
+                
+                saveData();
+                updateSpinButtonState();
+                updateWeeklyHistory();
+                
+                // Re-enable button
+                spinButton.disabled = false;
+                spinButton.classList.remove('spinning');
+            }, 2000);
+        }
+        
+        function selectRandomItem(items) {
+            if (appState.settings.use_weighted) {
+                // Create weighted pool
+                const pool = [];
+                items.forEach(item => {
+                    for (let i = 0; i < item.weight; i++) {
+                        pool.push(item);
+                    }
+                });
+                return pool[Math.floor(Math.random() * pool.length)];
+            } else {
+                return items[Math.floor(Math.random() * items.length)];
+            }
+        }
+        
+        function showResult(item) {
+            hideEmptyState();
+            
+            document.getElementById('resultTitle').textContent = `${item.emoji} ${item.name}`;
+            document.getElementById('resultPrice').textContent = item.price;
+            document.getElementById('resultNotes').textContent = item.notes || '';
+            
+            const tagsContainer = document.getElementById('resultTags');
+            tagsContainer.innerHTML = '';
+            item.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = `#${tag}`;
+                tagsContainer.appendChild(tagElement);
+            });
+            
+            resultCard.classList.add('show');
+            updateWeeklyHistory();
+        }
+        
+        // Weekly History Management
+        function updateWeeklyHistory() {
+            const thisWeekHistory = getThisWeekHistory();
+            const weekTableBody = document.getElementById('weekTableBody');
+            const emptyWeek = document.getElementById('emptyWeek');
+            
+            if (thisWeekHistory.length === 0) {
+                weekTableBody.innerHTML = '';
+                emptyWeek.style.display = 'block';
+                return;
+            }
+            
+            emptyWeek.style.display = 'none';
+            
+            // Group by day
+            const dayGroups = {};
+            thisWeekHistory.forEach(entry => {
+                const date = new Date(entry.picked_at);
+                const dayKey = date.toDateString();
+                if (!dayGroups[dayKey]) {
+                    dayGroups[dayKey] = [];
+                }
+                dayGroups[dayKey].push(entry);
+            });
+            
+            // Create table rows
+            weekTableBody.innerHTML = '';
+            const sortedDays = Object.keys(dayGroups).sort((a, b) => new Date(a) - new Date(b));
+            
+            sortedDays.forEach(dayKey => {
+                const entries = dayGroups[dayKey];
+                const date = new Date(dayKey);
+                const isToday = new Date().toDateString() === dayKey;
+                
+                entries.forEach((entry, index) => {
+                    const item = appState.items.find(item => item.id === entry.item_id);
+                    if (!item) return;
+                    
+                    const row = document.createElement('tr');
+                    
+                    // Day cell (only for first entry of the day)
+                    if (index === 0) {
+                        const dayCell = document.createElement('td');
+                        dayCell.rowSpan = entries.length;
+                        dayCell.className = `day-name ${isToday ? 'day-today' : ''}`;
+                        dayCell.textContent = getDayName(date);
+                        if (isToday) dayCell.textContent += ' (Today)';
+                        row.appendChild(dayCell);
+                    }
+                    
+                    // Lunch item cell
+                    const lunchCell = document.createElement('td');
+                    lunchCell.innerHTML = `
+                        <div class="lunch-item">
+                            <span class="lunch-emoji">${item.emoji}</span>
+                            <span>${item.name}</span>
+                        </div>
+                    `;
+                    row.appendChild(lunchCell);
+                    
+                    // Time cell
+                    const timeCell = document.createElement('td');
+                    const time = new Date(entry.picked_at);
+                    timeCell.innerHTML = `
+                        <div class="lunch-time">
+                            ${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    `;
+                    row.appendChild(timeCell);
+                    
+                    weekTableBody.appendChild(row);
+                });
+            });
+        }
+        
+        function clearWeekHistory() {
+            if (confirm('Clear this week\'s lunch history? This will allow you to pick the same items again this week.')) {
+                // Get this week's history before clearing
+                const thisWeekHistory = getThisWeekHistory();
+                const pickedItemIds = thisWeekHistory.map(entry => entry.item_id);
+                
+                // Remove this week's entries from history
+                appState.history = appState.history.filter(entry => !isCurrentWeek(entry.picked_at));
+                
+                // Reset last_picked_at for items picked this week
+                appState.items.forEach(item => {
+                    if (pickedItemIds.includes(item.id) && item.last_picked_at && isCurrentWeek(item.last_picked_at)) {
+                        item.last_picked_at = null;
+                    }
+                });
+                
+                saveData();
+                updateWeeklyHistory();
+                updateSpinButtonState();
+            }
+        }
+        
+        // Modal Management
+        function openEditModal(item = null) {
+            appState.currentEditingId = item ? item.id : null;
+            
+            if (item) {
+                document.getElementById('editModalTitle').textContent = 'Edit Item';
+                document.getElementById('itemName').value = item.name;
+                document.getElementById('itemEmoji').value = item.emoji;
+                document.getElementById('itemPrice').value = item.price;
+                document.getElementById('itemTags').value = item.tags.join(', ');
+                document.getElementById('itemNotes').value = item.notes;
+                setWeight(item.weight);
+            } else {
+                document.getElementById('editModalTitle').textContent = 'Add Item';
+                editForm.reset();
+                setWeight(3);
+            }
+            
+            editModal.classList.add('show');
+            document.getElementById('itemName').focus();
+        }
+        
+        function closeEditModal() {
+            editModal.classList.remove('show');
+            appState.currentEditingId = null;
+        }
+        
+        function editItem(id) {
+            const item = appState.items.find(item => item.id === id);
+            if (item) {
+                openEditModal(item);
+            }
+        }
+        
+        function setWeight(weight) {
+            const dots = document.querySelectorAll('.weight-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index < weight);
+            });
+        }
+        
+        function getWeight() {
+            return document.querySelectorAll('.weight-dot.active').length;
+        }
+        
+        // Utility Functions
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(appState, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `lunch-picker-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+        
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (confirm('This will replace all your current data. Are you sure?')) {
+                        appState = { ...appState, ...imported };
+                        saveData();
+                        updateUI();
+                        updateFilters();
+                        
+                        if (appState.items.length === 0) {
+                            showEmptyState();
+                        } else {
+                            hideEmptyState();
+                        }
+                        
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Invalid file format. Please select a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Spin button
+            spinButton.addEventListener('click', spin);
+            
+            // Result actions
+            document.getElementById('pickAgainBtn').addEventListener('click', spin);
+            document.getElementById('markEatenBtn').addEventListener('click', () => {
+                resultCard.classList.remove('show');
+            });
+            
+            // Add item buttons
+            document.getElementById('addItemBtn').addEventListener('click', () => openEditModal());
+            document.getElementById('addFirstItemBtn').addEventListener('click', () => openEditModal());
+            
+            // Modal
+            document.querySelector('.modal-close').addEventListener('click', closeEditModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeEditModal);
+            
+            // Form submission
+            document.getElementById('saveBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('itemName').value.trim(),
+                    emoji: document.getElementById('itemEmoji').value.trim(),
+                    price: document.getElementById('itemPrice').value,
+                    tags: document.getElementById('itemTags').value.trim(),
+                    notes: document.getElementById('itemNotes').value.trim(),
+                    weight: getWeight()
+                };
+                
+                if (!formData.name) {
+                    alert('Please enter a name for the item.');
+                    return;
+                }
+                
+                if (appState.currentEditingId) {
+                    updateItem(appState.currentEditingId, formData);
+                } else {
+                    addItem(formData);
+                }
+                
+                closeEditModal();
+            });
+            
+            // Weight slider
+            document.querySelectorAll('.weight-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const weight = parseInt(dot.dataset.weight);
+                    setWeight(weight);
+                });
+            });
+            
+            // Search
+            searchInput.addEventListener('input', renderItemList);
+            
+            // Price filters
+            document.querySelectorAll('[data-price]').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const price = chip.dataset.price;
+                    togglePriceFilter(price);
+                    chip.classList.toggle('active');
+                });
+            });
+            
+            // Settings
+            document.getElementById('avoidRepeats').addEventListener('change', () => {
+                appState.settings.weekly_restriction = document.getElementById('avoidRepeats').checked;
+                saveData();
+                updateSpinButtonState();
+            });
+            
+            // Clear week history
+            document.getElementById('clearWeekBtn').addEventListener('click', clearWeekHistory);
+            
+            // Footer links
+            document.getElementById('exportLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                exportData();
+            });
+            
+            document.getElementById('importLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('importFile').click();
+            });
+            
+            document.getElementById('importFile').addEventListener('change', importData);
+            
+            // History link (placeholder)
+            document.getElementById('historyLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('History feature coming soon!');
+            });
+            
+            // Close modal on overlay click
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal) {
+                    closeEditModal();
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && editModal.classList.contains('show')) {
+                    closeEditModal();
+                }
+                
+                if (e.key === ' ' && !editModal.classList.contains('show') && 
+                    !e.target.matches('input, textarea, select')) {
+                    e.preventDefault();
+                    spin();
+                }
+            });
+        }
+        
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(console.error);
+        }
+        
+        // Initialize app when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+        
+        // Make functions globally available for onclick handlers
+        window.editItem = editItem;
+        window.deleteItem = deleteItem;
+    </script>
+</body>
+</html>
